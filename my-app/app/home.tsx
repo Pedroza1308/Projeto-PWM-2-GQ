@@ -32,8 +32,7 @@ export default function LoginScreen() {
       
       Alert.alert('Sucesso', `Bem-vindo de volta, ${user.get('username')}!`);
       
-      
-      router.replace('/(tabs)'); 
+      router.replace('/home'); 
       
     } catch (error: any) {
       

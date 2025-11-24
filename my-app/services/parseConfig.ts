@@ -1,3 +1,4 @@
+import '../polyfills'
 import Parse from "parse/react-native.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
