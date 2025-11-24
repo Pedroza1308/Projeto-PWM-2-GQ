@@ -3,20 +3,19 @@ import { StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator } fro
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useAuthStore } from '@/store/authStore';
 import Parse from '@/services/parseConfig';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
-export default function LoginScreen() {
+export default function SignupScreen() {
   const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
   
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!username || !password) {
+  const handleSignup = async () => {
+    if (!username || !email || !password) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos.');
       return;
     }
@@ -24,20 +23,29 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
+      const user = new Parse.User();
+      user.set('username', username);
+      user.set('email', email);
+      user.set('password', password);
       
-      const user = await Parse.User.logIn(username, password);
+      await user.signUp();
       
+      Alert.alert('Sucesso', 'Conta criada! Você já pode fazer login.');
       
-      setUser(user);
-      
-      Alert.alert('Sucesso', `Bem-vindo de volta, ${user.get('username')}!`);
-      
-      router.replace('/home'); 
+      // Redireciona para a tela de Login
+      router.replace('/'); 
       
     } catch (error: any) {
+      // O Parse retorna erros específicos que podem ser tratados aqui.
+      let message = 'Falha ao criar conta. Tente novamente.';
+      if (error.code === 202) {
+        message = 'Usuário já existe. Escolha outro nome de usuário.';
+      } else if (error.code === 203) {
+        message = 'E-mail já cadastrado.';
+      }
       
-      Alert.alert('Falha no Login', 'Usuário ou senha inválidos. Verifique com o Back-end.');
-      console.error('Error logging in: ', error);
+      Alert.alert('Erro no Cadastro', message);
+      console.error('Error signing up: ', error);
     } finally {
       setIsLoading(false);
     }
@@ -46,19 +54,30 @@ export default function LoginScreen() {
   return (
     <ThemedView style={styles.container}>
       
-      <IconSymbol name="house.fill" size={80} color="#FFA500" style={{ marginBottom: 20 }} />
-      
-      <ThemedText type="title" style={styles.title}>Daily Meals</ThemedText>
-      <ThemedText style={styles.subtitle}>Gerencie suas refeições diárias</ThemedText>
+      <ThemedText type="title" style={styles.title}>Crie Sua Conta</ThemedText>
+      <ThemedText style={styles.subtitle}>Junte-se à comunidade Daily Meals!</ThemedText>
 
       <ThemedView style={styles.inputContainer}>
         <ThemedText type="defaultSemiBold">Usuário</ThemedText>
         <TextInput 
           style={styles.input}
-          placeholder="Digite seu usuário"
+          placeholder="Escolha um nome de usuário"
           placeholderTextColor="#888"
           value={username}
           onChangeText={setUsername}
+          autoCapitalize="none"
+        />
+      </ThemedView>
+      
+      <ThemedView style={styles.inputContainer}>
+        <ThemedText type="defaultSemiBold">E-mail</ThemedText>
+        <TextInput 
+          style={styles.input}
+          placeholder="Digite seu e-mail"
+          placeholderTextColor="#888"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
           autoCapitalize="none"
         />
       </ThemedView>
@@ -67,7 +86,7 @@ export default function LoginScreen() {
         <ThemedText type="defaultSemiBold">Senha</ThemedText>
         <TextInput 
           style={styles.input}
-          placeholder="Digite sua senha"
+          placeholder="Crie uma senha"
           placeholderTextColor="#888"
           value={password}
           onChangeText={setPassword}
@@ -77,19 +96,19 @@ export default function LoginScreen() {
 
       <TouchableOpacity 
         style={styles.button} 
-        onPress={handleLogin}
+        onPress={handleSignup}
         disabled={isLoading}
       >
         {isLoading ? (
           <ActivityIndicator color="#FFF" />
         ) : (
-          <ThemedText style={styles.buttonText}>Entrar</ThemedText>
+          <ThemedText style={styles.buttonText}>Cadastrar</ThemedText>
         )}
       </TouchableOpacity>
 
       
-      <TouchableOpacity style={{ marginTop: 20 }} onPress={() => Alert.alert("Info", "Peça para o amigo do Back-end criar a função de cadastro!")}>
-        <ThemedText type="link">Não tem conta? Cadastre-se</ThemedText>
+      <TouchableOpacity style={{ marginTop: 20 }} onPress={() => router.back()}>
+        <ThemedText type="link">Já tenho conta? Voltar para Login</ThemedText>
       </TouchableOpacity>
     </ThemedView>
   );
@@ -98,9 +117,9 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    paddingTop: 80,
   },
   title: {
     fontSize: 32,
@@ -129,7 +148,7 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: 50,
-    backgroundColor: '#FFA500',
+    backgroundColor: '#0a7ea4', // Cor azul para diferenciar
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',

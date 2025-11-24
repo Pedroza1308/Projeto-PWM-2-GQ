@@ -36,8 +36,15 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="home" options={{ headerShown: false }} />
+        {/* A tela index.tsx é o login */}
+        <Stack.Screen name="index" options={{ headerShown: false }} /> 
+        
+        {/* A tela signup.tsx será a de cadastro */}
+        <Stack.Screen name="signup" options={{ title: 'Criar Conta' }} /> 
+        
+        {/* As abas são a área logada */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
