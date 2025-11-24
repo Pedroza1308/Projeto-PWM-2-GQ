@@ -4,9 +4,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 Parse.setAsyncStorage(AsyncStorage);
 
-:
-const PARSE_APPLICATION_ID = "COLE_O_APP_ID_AQUI";
-const PARSE_JAVASCRIPT_KEY = "COLE_A_JS_KEY_AQUI";
+
+const PARSE_APPLICATION_ID = "app id";
+const PARSE_JAVASCRIPT_KEY = "key js ";
 
 Parse.initialize(PARSE_APPLICATION_ID, PARSE_JAVASCRIPT_KEY);
 // URL padrão do Back4App
