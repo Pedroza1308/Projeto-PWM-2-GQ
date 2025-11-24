@@ -34,7 +34,7 @@ export default function IndexScreen() {
       Alert.alert('Sucesso', `Bem-vindo de volta, ${user.get('username')}!`);
       
       // Mudar a navegação para as abas
-      router.replace('/(tabs)/home');
+      router.replace('/(tabs)');
       
     } catch (error: any) {
       

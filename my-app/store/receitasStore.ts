@@ -2,10 +2,10 @@ import { create } from 'zustand';
 import Parse from '@/services/parseConfig'; // Importa a configuração do Back4App
 
 // --- Interfaces de Dados ---
-// Defina as interfaces para as Classes do Back4App
-// (Idealmente, você criaria classes reais no Parse para tipagem completa)
+// Define as interfaces para as Classes do Back4App
 
 // Entidade de Relacionamento (Tipo de Cozinha)
+// Nota: Parse.Object é usado para objetos não tipados, mas definimos o mínimo tipado.
 export interface TipoCozinha {
   id: string;
   nome: string;
@@ -24,16 +24,25 @@ export interface Receita {
   tipoCozinha: TipoCozinha; // O Parse SDK deve incluir o objeto completo ao usar 'include'
 }
 
+// Para usar objetos Parse diretamente na lista de receitas no Store
+// Isso simplifica a tipagem, pois o resultado do fetch é um Parse.Object.
+type ReceitaParseObject = Parse.Object & {
+  id: string;
+  get: (key: string) => any;
+};
+
 // --- Interface do Store ---
 interface ReceitasState {
   // Estados de dados
-  receitas: Receita[];
+  // Armazenamos como Parse.Object para facilitar o acesso aos métodos .get() e id
+  receitas: ReceitaParseObject[];
   tiposCozinha: TipoCozinha[];
   isLoading: boolean;
   error: string | null;
 
   // Ações para o CRUD e busca
-  fetchReceitas: () => Promise<void>;
+  // Modificado para aceitar tipoCozinhaId opcional para filtro
+  fetchReceitas: (tipoCozinhaId?: string) => Promise<void>; 
   fetchTiposCozinha: () => Promise<void>;
   createReceita: (data: Omit<Receita, 'id' | 'tipoCozinha'> & { tipoCozinhaId: string }) => Promise<boolean>;
   updateReceita: (id: string, data: Partial<Omit<Receita, 'id' | 'tipoCozinha'>> & { tipoCozinhaId?: string }) => Promise<boolean>;
@@ -53,7 +62,8 @@ export const useReceitasStore = create<ReceitasState>((set, get) => ({
   fetchTiposCozinha: async () => {
     set({ isLoading: true, error: null });
     try {
-      const Query = new Parse.Query('TipoCozinha');
+      const TipoCozinhaObject = Parse.Object.extend('TipoCozinha');
+      const Query = new Parse.Query(TipoCozinhaObject);
       const results = await Query.find();
       
       const tipos: TipoCozinha[] = results.map((item: Parse.Object) => ({
@@ -71,32 +81,38 @@ export const useReceitasStore = create<ReceitasState>((set, get) => ({
     }
   },
 
-  fetchReceitas: async () => {
+  // FUNÇÃO DE BUSCA CORRIGIDA COM LÓGICA DE FILTRO
+  fetchReceitas: async (tipoCozinhaId?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const Query = new Parse.Query('Receita');
-      Query.include('tipoCozinha'); 
-      const results = await Query.find();
-
-      const receitas: Receita[] = results.map((item: Parse.Object) => {
-        const tipoCozinhaParse = item.get('tipoCozinha') as Parse.Object;
-        
-        return {
-          id: item.id,
-          nome: item.get('nome'),
-          tempoPreparo: item.get('tempoPreparo'),
-          ingredientes: item.get('ingredientes'),
-          modoPreparo: item.get('modoPreparo'),
-          dificuldade: item.get('dificuldade'),
-          tipoCozinha: {
-            id: tipoCozinhaParse.id,
-            nome: tipoCozinhaParse.get('nome'),
-            cor: tipoCozinhaParse.get('cor') || '#ccc',
-          },
-        };
-      });
+      const ReceitaObject = Parse.Object.extend('Receita');
+      const query = new Parse.Query(ReceitaObject);
       
-      set({ receitas });
+      // Adiciona o relacionamento (essencial para mostrar o nome do Tipo de Cozinha na lista)
+      query.include('tipoCozinha'); 
+      
+      // >>> LÓGICA DE FILTRO <<<
+      if (tipoCozinhaId) {
+        // Cria um objeto Parse Pointer para o filtro
+        const TipoCozinhaObject = Parse.Object.extend('TipoCozinha');
+        // Usamos createWithoutData para criar uma referência (Pointer) apenas com o ID
+        const tipoCozinhaPointer = Parse.Object.createWithoutData(
+          TipoCozinhaObject,
+          tipoCozinhaId
+        );
+        // Filtra a Query para ser igual ao Tipo de Cozinha selecionado
+        query.equalTo('tipoCozinha', tipoCozinhaPointer);
+      }
+      // >>> FIM DA LÓGICA DE FILTRO <<<
+      
+      // Ordenação para ter um histórico visual
+      query.descending('createdAt');
+
+      // O Parse.find() já retorna Parse.Object[], que se ajusta à nova tipagem do store
+      const results = await query.find();
+
+      // Forçamos o cast para o tipo ReceitaParseObject[] (Parse.Object + id)
+      set({ receitas: results as ReceitaParseObject[] });
     } catch (e: any) {
       console.error('Erro ao buscar Receitas: ', e);
       set({ error: `Falha ao buscar receitas: ${e.message}` });
@@ -122,9 +138,9 @@ export const useReceitasStore = create<ReceitasState>((set, get) => ({
       novaReceita.set('dificuldade', data.dificuldade);
       novaReceita.set('tipoCozinha', tipoCozinhaPointer);
       
-      const savedReceita = await novaReceita.save();
+      await novaReceita.save();
       
-      // Força a atualização da lista para incluir a nova receita com o relacionamento populado
+      // Força a atualização da lista (sem filtro, para exibir a nova)
       await get().fetchReceitas(); 
 
       return true;
@@ -141,8 +157,8 @@ export const useReceitasStore = create<ReceitasState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const ReceitaObject = Parse.Object.extend('Receita');
-      const receitaToUpdate = new ReceitaObject();
-      receitaToUpdate.set('objectId', id);
+      // Criar um objeto Parse com o ID para apenas enviar a atualização (melhor performance)
+      const receitaToUpdate = ReceitaObject.createWithoutData(id);
       
       if (data.nome) receitaToUpdate.set('nome', data.nome);
       if (data.tempoPreparo !== undefined) receitaToUpdate.set('tempoPreparo', data.tempoPreparo);
@@ -160,7 +176,13 @@ export const useReceitasStore = create<ReceitasState>((set, get) => ({
       await receitaToUpdate.save();
 
       // Força a atualização da lista para refletir a mudança na UI
-      await get().fetchReceitas(); 
+      // Mantém o filtro atual, se houver
+      const currentReceitas = get().receitas;
+      const currentFilter = currentReceitas.length > 0 && currentReceitas.some(r => r.id === id) 
+        ? currentReceitas.find(r => r.id === id)?.get('tipoCozinha')?.id 
+        : undefined; 
+      
+      await get().fetchReceitas(currentFilter);
       
       return true;
     } catch (e: any) {
@@ -176,14 +198,13 @@ export const useReceitasStore = create<ReceitasState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const ReceitaObject = Parse.Object.extend('Receita');
-      const receitaToDelete = new ReceitaObject();
-      receitaToDelete.set('objectId', id);
+      const receitaToDelete = ReceitaObject.createWithoutData(id);
 
       await receitaToDelete.destroy();
 
       // Remove localmente a receita deletada
       set((state) => ({
-        receitas: state.receitas.filter(r => r.id !== id),
+        receitas: state.receitas.filter(r => r.id !== id) as ReceitaParseObject[],
       }));
 
       return true;
