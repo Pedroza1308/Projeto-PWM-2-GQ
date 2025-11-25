@@ -52,7 +52,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: () => {
             logout();
-            router.replace('../index');
+            router.replace('/'); 
           }
         }
       ]
@@ -64,7 +64,6 @@ export default function ProfileScreen() {
         style={styles.scrollViewContainer} 
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-            // Adiciona a funcionalidade "pull-to-refresh" na rolagem principal
             <View onLayout={() => {}}> 
                 {isLoading && myReceitas.length === 0 ? (
                     <ActivityIndicator size="large" color="#0a7ea4" />
@@ -112,7 +111,7 @@ export default function ProfileScreen() {
         </ThemedView>
       </ThemedView>
 
-      {/* Seção Minhas Receitas - AGORA É ROLÁVEL COM O SCROLLVIEW */}
+      {/* Seção Minhas Receitas */}
       <ThemedView style={styles.recipesSection}>
         <ThemedView style={styles.recipesSectionHeader}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>Minhas Receitas</ThemedText>
@@ -121,7 +120,7 @@ export default function ProfileScreen() {
           </ThemedView>
         </ThemedView>
         
-        {/* Lógica de renderização modificada */}
+        {/* Renderiza a lista de receitas ou estados vazios/loading */}
         {isLoading && myReceitas.length === 0 ? (
           <ThemedView style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#0a7ea4" />
@@ -144,6 +143,7 @@ export default function ProfileScreen() {
           </ThemedView>
         ) : (
           <View> 
+            {/* Mapeamento dos itens para rolagem contínua */}
             {myReceitas.map((item) => (
                 <ReceitaListItem
                     key={item.id}
@@ -154,13 +154,6 @@ export default function ProfileScreen() {
           </View>
         )}
       </ThemedView>
-
-      {/* Botão de Logout */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <IconSymbol name="arrow.right.square.fill" size={20} color="#FFF" />
-        <ThemedText style={styles.logoutText}>Sair da Conta</ThemedText>
-      </TouchableOpacity>
-
     </ScrollView>
   );
 }
@@ -173,14 +166,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     paddingTop: 60,
-    paddingBottom: 80,
-  },
-
-  container: {
-    flex: 1,
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#F8F9FA',
+    paddingBottom: 40, 
   },
 
   header: {
@@ -374,27 +360,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 16,
-  },
-
-  logoutButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-    padding: 16,
-    backgroundColor: '#DC3545',
-    borderRadius: 16,
-    shadowColor: '#DC3545',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-    marginTop: 20, 
-  },
-  logoutText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 16,
-    letterSpacing: 0.3,
   },
 });
