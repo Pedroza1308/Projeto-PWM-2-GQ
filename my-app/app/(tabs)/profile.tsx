@@ -52,7 +52,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: () => {
             logout();
-            router.replace('/');
+            router.replace('../index');
           }
         }
       ]
