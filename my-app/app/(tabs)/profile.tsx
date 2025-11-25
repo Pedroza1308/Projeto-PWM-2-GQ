@@ -1,11 +1,36 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ScrollView, View } from 'react-native'; // Importar ScrollView
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useAuthStore } from '@/store/authStore';
 import { useReceitasStore } from '@/store/receitasStore';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+
+const ReceitaListItem = ({ item, onPress }: { item: any, onPress: () => void }) => (
+  <TouchableOpacity 
+    style={styles.receitaCard}
+    onPress={onPress}
+  >
+    <ThemedView style={styles.receitaContent}>
+      <ThemedText type="defaultSemiBold" style={styles.receitaTitle}>
+        {item.get('nome')}
+      </ThemedText>
+      <ThemedView style={styles.receitaDetails}>
+        <ThemedView style={styles.cuisineBadge}>
+          <ThemedText style={styles.cuisineText}>
+            {item.get('tipoCozinha')?.get('nome') || 'Geral'}
+          </ThemedText>
+        </ThemedView>
+        <ThemedText style={styles.timeText}>
+          {item.get('tempoPreparo')} min
+        </ThemedText>
+      </ThemedView>
+    </ThemedView>
+    <IconSymbol name="chevron.right" size={20} color="#0a7ea4" style={styles.chevron} />
+  </TouchableOpacity>
+);
+
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
@@ -34,32 +59,26 @@ export default function ProfileScreen() {
     );
   };
 
-  const renderReceitaItem = ({ item }: { item: any }) => (
-    <TouchableOpacity 
-      style={styles.receitaCard}
-      onPress={() => router.push(`/detalhes-receita/${item.id}`)}
-    >
-      <ThemedView style={styles.receitaContent}>
-        <ThemedText type="defaultSemiBold" style={styles.receitaTitle}>
-          {item.get('nome')}
-        </ThemedText>
-        <ThemedView style={styles.receitaDetails}>
-          <ThemedView style={styles.cuisineBadge}>
-            <ThemedText style={styles.cuisineText}>
-              {item.get('tipoCozinha')?.get('nome') || 'Geral'}
-            </ThemedText>
-          </ThemedView>
-          <ThemedText style={styles.timeText}>
-            {item.get('tempoPreparo')} min
-          </ThemedText>
-        </ThemedView>
-      </ThemedView>
-      <IconSymbol name="chevron.right" size={20} color="#0a7ea4" style={styles.chevron} />
-    </TouchableOpacity>
-  );
-
   return (
-    <ThemedView style={styles.container}>
+    <ScrollView 
+        style={styles.scrollViewContainer} 
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+            // Adiciona a funcionalidade "pull-to-refresh" na rolagem principal
+            <View onLayout={() => {}}> 
+                {isLoading && myReceitas.length === 0 ? (
+                    <ActivityIndicator size="large" color="#0a7ea4" />
+                ) : (
+                    <View />
+                )}
+            </View>
+        }
+        onScroll={({ nativeEvent }) => {
+            if (nativeEvent.contentOffset.y < -100 && !isLoading) { 
+                fetchMyReceitas();
+            }
+        }}
+    > 
       
       {/* Cabeçalho do Perfil */}
       <ThemedView style={styles.header}>
@@ -93,7 +112,7 @@ export default function ProfileScreen() {
         </ThemedView>
       </ThemedView>
 
-      {/* Seção Minhas Receitas */}
+      {/* Seção Minhas Receitas - AGORA É ROLÁVEL COM O SCROLLVIEW */}
       <ThemedView style={styles.recipesSection}>
         <ThemedView style={styles.recipesSectionHeader}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>Minhas Receitas</ThemedText>
@@ -102,36 +121,37 @@ export default function ProfileScreen() {
           </ThemedView>
         </ThemedView>
         
+        {/* Lógica de renderização modificada */}
         {isLoading && myReceitas.length === 0 ? (
           <ThemedView style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#0a7ea4" />
             <ThemedText style={styles.loadingText}>Carregando suas receitas...</ThemedText>
           </ThemedView>
+        ) : myReceitas.length === 0 ? (
+          <ThemedView style={styles.emptyContainer}>
+            <IconSymbol name="book" size={60} color="#CCC" style={styles.emptyIcon} />
+            <ThemedText style={styles.emptyText}>
+              Você ainda não criou nenhuma receita
+            </ThemedText>
+            <TouchableOpacity 
+              style={styles.addRecipeButton}
+              onPress={() => router.push('/adicionar-receita')}
+            >
+              <ThemedText style={styles.addRecipeButtonText}>
+                Criar minha primeira receita
+              </ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
         ) : (
-          <FlatList
-            data={myReceitas}
-            keyExtractor={(item) => item.id}
-            renderItem={renderReceitaItem}
-            contentContainerStyle={styles.listContent}
-            ListEmptyComponent={
-              <ThemedView style={styles.emptyContainer}>
-                <IconSymbol name="book" size={60} color="#CCC" style={styles.emptyIcon} />
-                <ThemedText style={styles.emptyText}>
-                  Você ainda não criou nenhuma receita
-                </ThemedText>
-                <TouchableOpacity 
-                  style={styles.addRecipeButton}
-                  onPress={() => router.push('/adicionar-receita')}
-                >
-                  <ThemedText style={styles.addRecipeButtonText}>
-                    Criar minha primeira receita
-                  </ThemedText>
-                </TouchableOpacity>
-              </ThemedView>
-            }
-            refreshing={isLoading && myReceitas.length > 0}
-            onRefresh={fetchMyReceitas}
-          />
+          <View> 
+            {myReceitas.map((item) => (
+                <ReceitaListItem
+                    key={item.id}
+                    item={item}
+                    onPress={() => router.push(`/detalhes-receita/${item.id}`)}
+                />
+            ))}
+          </View>
         )}
       </ThemedView>
 
@@ -141,12 +161,21 @@ export default function ProfileScreen() {
         <ThemedText style={styles.logoutText}>Sair da Conta</ThemedText>
       </TouchableOpacity>
 
-    </ThemedView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  // Container Principal
+  scrollViewContainer: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  scrollContent: {
+    padding: 20,
+    paddingTop: 60,
+    paddingBottom: 80,
+  },
+
   container: {
     flex: 1,
     padding: 20,
@@ -154,11 +183,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
   },
 
-  // === CABEÇALHO ===
   header: {
     alignItems: 'center',
     marginBottom: 32,
     paddingVertical: 20,
+    backgroundColor: 'transparent',
   },
   avatarIcon: {
     marginBottom: 12,
@@ -176,9 +205,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // === SEÇÃO DE INFORMAÇÕES ===
   infoSection: {
     marginBottom: 32,
+    backgroundColor: 'transparent',
   },
   sectionTitle: {
     color: '#2E86AB',
@@ -202,10 +231,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
+    backgroundColor: 'transparent',
   },
   infoTextContainer: {
     flex: 1,
     marginLeft: 16,
+    backgroundColor: 'transparent',
   },
   infoLabel: {
     fontSize: 12,
@@ -226,16 +257,16 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
 
-  // === SEÇÃO DE RECEITAS ===
   recipesSection: {
-    flex: 1,
     marginBottom: 16,
+    backgroundColor: 'transparent',
   },
   recipesSectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
+    backgroundColor: 'transparent',
   },
   receitasCountBadge: {
     backgroundColor: '#FFA500',
@@ -249,10 +280,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // === CARDS DE RECEITA ===
-  listContent: {
-    paddingBottom: 20,
-  },
   receitaCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -273,6 +300,7 @@ const styles = StyleSheet.create({
   receitaContent: {
     flex: 1,
     marginRight: 16,
+    backgroundColor: 'transparent',
   },
   receitaTitle: {
     fontSize: 18,
@@ -285,6 +313,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    backgroundColor: 'transparent',
   },
   cuisineBadge: {
     backgroundColor: '#E7F5FF',
@@ -306,12 +335,11 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 
-  // === ESTADOS (LOADING E EMPTY) ===
   loadingContainer: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 60,
+    backgroundColor: 'transparent',
   },
   loadingText: {
     marginTop: 16,
@@ -319,11 +347,11 @@ const styles = StyleSheet.create({
     color: '#6C757D',
   },
   emptyContainer: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 60,
     paddingHorizontal: 40,
+    backgroundColor: 'transparent',
   },
   emptyIcon: {
     marginBottom: 16,
@@ -344,11 +372,10 @@ const styles = StyleSheet.create({
   },
   addRecipeButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
     fontWeight: '600',
+    fontSize: 16,
   },
 
-  // === BOTÃO DE LOGOUT ===
   logoutButton: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -362,6 +389,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
+    marginTop: 20, 
   },
   logoutText: {
     color: '#FFFFFF',
