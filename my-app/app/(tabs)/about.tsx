@@ -78,64 +78,83 @@ function FeatureItem({ icon, text }: { icon: any, text: string }) {
     </ThemedView>
   );
 }
-
 const styles = StyleSheet.create({
   headerImage: {
-    bottom: -50,
-    left: -30,
+    bottom: -40,
+    left: -20,
     position: 'absolute',
-    opacity: 0.8,
+    opacity: 0.7,
   },
   titleContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   title: {
-    color: '#FFA500',
-    fontSize: 32,
-    fontWeight: 'bold',
+    color: '#FF6B35',
+    fontSize: 36,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
-    marginBottom: 24,
-    fontStyle: 'italic',
-    opacity: 0.8,
+    marginBottom: 32,
+    textAlign: 'center',
+    lineHeight: 24,
+    color: '#666',
+    paddingHorizontal: 20,
   },
   section: {
-    marginBottom: 24,
-    backgroundColor: 'transparent',
+    marginBottom: 32,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
-    color: '#0a7ea4',
-    marginBottom: 12,
-    fontWeight: '700',
+    color: '#2E86AB',
+    marginBottom: 16,
+    fontWeight: '600',
+    fontSize: 20,
   },
   introText: {
-    marginBottom: 12,
+    marginBottom: 20,
     lineHeight: 22,
+    fontSize: 15,
+    color: '#444',
   },
   techText: {
-    lineHeight: 24,
+    lineHeight: 22,
+    fontSize: 15,
+    color: '#444',
   },
   featureItem: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 10,
     alignItems: 'flex-start',
-    backgroundColor: 'transparent',
+    marginBottom: 12,
+    paddingVertical: 8,
   },
   featureIcon: {
     marginTop: 2,
+    marginRight: 12,
   },
   featureText: {
     flex: 1,
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 20,
+    color: '#444',
   },
   footer: {
-    marginTop: 16,
+    marginTop: 24,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 32,
+  },
+  githubLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  githubText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#2E86AB',
   },
 });
