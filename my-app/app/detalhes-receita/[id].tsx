@@ -143,47 +143,125 @@ export default function DetalhesReceitaScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollContent: { padding: 20, paddingBottom: 60 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: { flexDirection: 'row', marginBottom: 20 },
-  titleText: { fontSize: 28, color: '#FFA500' },
-  
-  detailsBox: { 
-    backgroundColor: '#f9f9f9', 
-    borderRadius: 10, 
-    padding: 15, 
-    marginBottom: 25, 
-    borderLeftWidth: 5, 
-    borderLeftColor: '#0a7ea4' 
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F9FA', // Fundo claro padrão
   },
-  detailItem: { fontSize: 16, marginBottom: 5 },
-  subtitle: { fontSize: 20, marginTop: 10, marginBottom: 10, color: '#0a7ea4' },
-  bodyText: { fontSize: 16, lineHeight: 24, marginBottom: 20 },
-  listContainer: { marginBottom: 20 },
-  listItem: { fontSize: 16, marginLeft: 10, lineHeight: 24 },
+  scrollContent: {
+    padding: 24,
+    paddingBottom: 80,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+  },
   
+  // --- Cabeçalho ---
+  header: {
+    alignItems: 'center',
+    marginBottom: 30,
+    marginTop: 10,
+  },
+  titleText: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#FFA500', // Laranja da marca
+    textAlign: 'center',
+    letterSpacing: -0.5,
+    textShadowColor: 'rgba(255, 165, 0, 0.15)',
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 10,
+  },
+
+  // --- Card de Informações ---
+  detailsBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 30,
+    // Sombra suave
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  detailItem: {
+    fontSize: 16,
+    marginBottom: 12,
+    color: '#495057',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  // --- Seções de Texto (Ingredientes/Preparo) ---
+  subtitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#0a7ea4', // Azul para subtítulos
+    marginBottom: 16,
+    marginTop: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  listContainer: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  listItem: {
+    fontSize: 16,
+    lineHeight: 26,
+    color: '#333',
+    marginBottom: 6,
+  },
+  bodyText: {
+    fontSize: 16,
+    lineHeight: 28, // Melhor leitura
+    color: '#333',
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+    marginBottom: 30,
+  },
+
+  // --- Botões de Ação ---
   actionsContainer: {
-    marginTop: 30,
-    backgroundColor: 'transparent',
-    gap: 15, 
+    marginTop: 10,
+    gap: 16,
   },
-  button: { 
-    width: '100%', 
-    height: 50, 
-    borderRadius: 8, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-  },
-  deleteButton: { 
-    backgroundColor: '#D9534F', // Vermelho
+  button: {
+    width: '100%',
+    height: 56,
+    borderRadius: 50, // Botão pílula
+    justifyContent: 'center',
+    alignItems: 'center',
+    // Sombra nos botões
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
   },
   editButton: {
     backgroundColor: '#0a7ea4', // Azul
   },
-  buttonText: { 
-    color: '#FFF', 
-    fontWeight: 'bold', 
-    fontSize: 16 
+  deleteButton: {
+    backgroundColor: '#D9534F', // Vermelho
+  },
+  buttonText: {
+    color: '#FFF',
+    fontWeight: '700',
+    fontSize: 18,
+    letterSpacing: 0.5,
   },
 });
