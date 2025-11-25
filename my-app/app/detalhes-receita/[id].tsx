@@ -3,24 +3,15 @@ import { StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } fr
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useReceitasStore } from '@/store/receitasStore';
-import { useAuthStore } from '@/store/authStore'; // Importa o AuthStore
+import { useAuthStore } from '@/store/authStore';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function DetalhesReceitaScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>(); 
   
-  // Pega o usuário logado do store
   const { user } = useAuthStore();
-
-  const { 
-    receitas, 
-    isLoading, 
-    fetchReceitas, 
-    deleteReceita 
-  } = useReceitasStore();
-
+  const { receitas, isLoading, fetchReceitas, deleteReceita } = useReceitasStore();
   const [isDeleting, setIsDeleting] = useState(false);
   
   const receita = useMemo(() => {
@@ -37,7 +28,6 @@ export default function DetalhesReceitaScreen() {
     return (
       <ThemedView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0a7ea4" />
-        <ThemedText style={{ marginTop: 10 }}>Carregando detalhes...</ThemedText>
       </ThemedView>
     );
   }
@@ -53,11 +43,9 @@ export default function DetalhesReceitaScreen() {
     );
   }
 
-  // --- Lógica de Permissão ---
-  // Verifica se existe um usuário logado e se o ID dele bate com o ID do dono da receita
+  // --- VERIFICAÇÃO DE PROPRIEDADE ---
   const owner = receita.get('owner');
   const isOwner = user && owner && user.id === owner.id;
-  // ---------------------------
 
   const handleDelete = () => {
     Alert.alert(
@@ -72,7 +60,6 @@ export default function DetalhesReceitaScreen() {
             Alert.alert('Sucesso', 'Receita excluída.');
             router.replace('/(tabs)');
           } else {
-            Alert.alert('Erro', 'Falha ao excluir receita. Verifique suas permissões.');
             setIsDeleting(false);
           }
         }},
@@ -88,7 +75,7 @@ export default function DetalhesReceitaScreen() {
   );
   const modoPreparo = receita.get('modoPreparo');
   const tipoCozinhaNome = receita.get('tipoCozinha')?.get('nome') || 'Desconhecido';
-  const ownerName = owner?.get('username') || 'Desconhecido';
+  const donoDisplay = receita.get('dono') || owner?.get('username') || 'Desconhecido';
 
   return (
     <ThemedView style={styles.container}>
@@ -96,21 +83,11 @@ export default function DetalhesReceitaScreen() {
         
         <ThemedView style={styles.header}>
           <ThemedText type="title" style={styles.titleText}>{nome}</ThemedText>
-          
-          {/* Só mostra o botão de editar se for o dono */}
-          {isOwner && (
-            <TouchableOpacity 
-              style={styles.editButton} 
-              onPress={() => router.push(`/adicionar-receita?id=${id}`)}
-            >
-              <IconSymbol name="square.and.pencil" size={24} color="#0a7ea4" />
-            </TouchableOpacity>
-          )}
         </ThemedView>
 
         <ThemedView style={styles.detailsBox}>
           <ThemedText style={styles.detailItem}>
-            <ThemedText type="defaultSemiBold">Criado por:</ThemedText> {ownerName}
+            <ThemedText type="defaultSemiBold">Criado por:</ThemedText> {donoDisplay}
           </ThemedText>
           <ThemedText style={styles.detailItem}>
             <ThemedText type="defaultSemiBold">Cozinha:</ThemedText> {tipoCozinhaNome}
@@ -131,19 +108,33 @@ export default function DetalhesReceitaScreen() {
         <ThemedText type="subtitle" style={styles.subtitle}>Modo de Preparo</ThemedText>
         <ThemedText style={styles.bodyText}>{modoPreparo}</ThemedText>
 
-        {/* Só mostra o botão de deletar se for o dono */}
+        {/* AÇÕES DO DONO (Só aparecem se isOwner for true) */}
         {isOwner && (
-          <TouchableOpacity 
-            style={[styles.button, styles.deleteButton]} 
-            onPress={handleDelete}
-            disabled={isDeleting}
-          >
-            {isDeleting ? (
-              <ActivityIndicator color="#FFF" />
-            ) : (
-              <ThemedText style={styles.buttonText}>Deletar Receita</ThemedText>
-            )}
-          </TouchableOpacity>
+          <ThemedView style={styles.actionsContainer}>
+            
+            {/* Botão Deletar (Vermelho) */}
+            <TouchableOpacity 
+              style={[styles.button, styles.deleteButton]} 
+              onPress={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <ThemedText style={styles.buttonText}>Deletar Receita</ThemedText>
+              )}
+            </TouchableOpacity>
+
+            {/* Botão Editar (Azul) */}
+            <TouchableOpacity 
+              style={[styles.button, styles.editButton]} 
+              onPress={() => router.push(`/adicionar-receita?id=${id}`)}
+              disabled={isDeleting}
+            >
+              <ThemedText style={styles.buttonText}>Editar Receita</ThemedText>
+            </TouchableOpacity>
+
+          </ThemedView>
         )}
         
       </ScrollView>
@@ -152,78 +143,47 @@ export default function DetalhesReceitaScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1 },
+  scrollContent: { padding: 20, paddingBottom: 60 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  header: { flexDirection: 'row', marginBottom: 20 },
+  titleText: { fontSize: 28, color: '#FFA500' },
+  
+  detailsBox: { 
+    backgroundColor: '#f9f9f9', 
+    borderRadius: 10, 
+    padding: 15, 
+    marginBottom: 25, 
+    borderLeftWidth: 5, 
+    borderLeftColor: '#0a7ea4' 
   },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+  detailItem: { fontSize: 16, marginBottom: 5 },
+  subtitle: { fontSize: 20, marginTop: 10, marginBottom: 10, color: '#0a7ea4' },
+  bodyText: { fontSize: 16, lineHeight: 24, marginBottom: 20 },
+  listContainer: { marginBottom: 20 },
+  listItem: { fontSize: 16, marginLeft: 10, lineHeight: 24 },
+  
+  actionsContainer: {
+    marginTop: 30,
+    backgroundColor: 'transparent',
+    gap: 15, 
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  button: { 
+    width: '100%', 
+    height: 50, 
+    borderRadius: 8, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  titleText: {
-    fontSize: 28,
-    flex: 1,
-    marginRight: 10,
-    color: '#FFA500', 
+  deleteButton: { 
+    backgroundColor: '#D9534F', // Vermelho
   },
   editButton: {
-    padding: 5,
+    backgroundColor: '#0a7ea4', // Azul
   },
-  detailsBox: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 25,
-    borderLeftWidth: 5,
-    borderLeftColor: '#0a7ea4',
-  },
-  detailItem: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 20,
-    marginTop: 10,
-    marginBottom: 10,
-    color: '#0a7ea4',
-  },
-  bodyText: {
-    fontSize: 16,
-    lineHeight: 24,
-    marginBottom: 20,
-  },
-  listContainer: {
-    marginBottom: 20,
-  },
-  listItem: {
-    fontSize: 16,
-    marginLeft: 10,
-    lineHeight: 24,
-  },
-  button: {
-    width: '100%',
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  deleteButton: {
-    backgroundColor: '#D9534F', 
-  },
-  buttonText: {
-    color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 16,
+  buttonText: { 
+    color: '#FFF', 
+    fontWeight: 'bold', 
+    fontSize: 16 
   },
 });

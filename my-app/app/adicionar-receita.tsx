@@ -3,7 +3,7 @@ import { StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityInd
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useReceitasStore } from '@/store/receitasStore';
-import { useAuthStore } from '@/store/authStore'; // Importa auth
+import { useAuthStore } from '@/store/authStore';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 
@@ -19,7 +19,7 @@ interface ReceitaForm {
 export default function AdicionarReceitaScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>(); 
-  const { user } = useAuthStore(); // Usuário atual
+  const { user } = useAuthStore();
   
   const { 
     receitas, 
@@ -49,15 +49,14 @@ export default function AdicionarReceitaScreen() {
 
   useEffect(() => {
     if (isEditing && currentReceita) {
-      // --- VERIFICAÇÃO DE SEGURANÇA ---
+      // --- SEGURANÇA: Bloqueia acesso se não for dono ---
       const owner = currentReceita.get('owner');
-      // Se a receita tem dono e o usuário atual não é o dono
       if (owner && user && owner.id !== user.id) {
-        Alert.alert('Acesso Negado', 'Você só pode editar receitas criadas por você.');
+        Alert.alert('Acesso Negado', 'Você não pode editar uma receita que não é sua.');
         router.back();
         return;
       }
-      // --------------------------------
+      // -------------------------------------------------
 
       setFormData({
         nome: currentReceita.get('nome') || '',
@@ -102,7 +101,7 @@ export default function AdicionarReceitaScreen() {
         Alert.alert('Sucesso', 'Receita atualizada com sucesso!');
       }
     } else {
-      success = await createReceita(dataToSave as any); 
+      success = await createReceita(dataToSave as any);
       if (success) {
         Alert.alert('Sucesso', 'Receita criada com sucesso!');
       }
@@ -131,7 +130,7 @@ export default function AdicionarReceitaScreen() {
             <ThemedText style={styles.label}>Nome:</ThemedText>
             <TextInput 
               style={styles.input}
-              placeholder="Ex: Torta de Limão Rápida"
+              placeholder="Ex: Torta de Limão"
               value={formData.nome}
               onChangeText={(text) => setFormData(prev => ({ ...prev, nome: text }))}
             />
@@ -148,7 +147,7 @@ export default function AdicionarReceitaScreen() {
             <ThemedText style={styles.label}>Ingredientes:</ThemedText>
             <TextInput 
               style={[styles.input, styles.textArea]}
-              placeholder="Liste os ingredientes separados por vírgula ou linha"
+              placeholder="Lista de ingredientes..."
               multiline
               value={formData.ingredientes}
               onChangeText={(text) => setFormData(prev => ({ ...prev, ingredientes: text }))}
@@ -157,7 +156,7 @@ export default function AdicionarReceitaScreen() {
             <ThemedText style={styles.label}>Modo de Preparo:</ThemedText>
             <TextInput 
               style={[styles.input, styles.textArea]}
-              placeholder="Descreva o passo a passo"
+              placeholder="Passo a passo..."
               multiline
               value={formData.modoPreparo}
               onChangeText={(text) => setFormData(prev => ({ ...prev, modoPreparo: text }))}
@@ -215,6 +214,7 @@ export default function AdicionarReceitaScreen() {
 }
 
 const styles = StyleSheet.create({
+<<<<<<< Updated upstream
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA', 
@@ -311,4 +311,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   }
+=======
+  container: { flex: 1 },
+  scrollContent: { padding: 20, paddingBottom: 40 },
+  title: { fontSize: 24, marginBottom: 20, color: '#FFA500' },
+  label: { fontSize: 16, fontWeight: 'bold', marginTop: 15, marginBottom: 5 },
+  input: { width: '100%', borderColor: '#ccc', borderWidth: 1, borderRadius: 8, paddingHorizontal: 15, height: 50, backgroundColor: '#f9f9f9', color: '#000' },
+  textArea: { height: 100, paddingTop: 15 },
+  pickerContainer: { borderColor: '#ccc', borderWidth: 1, borderRadius: 8, backgroundColor: '#f9f9f9', marginBottom: 10 },
+  picker: { height: 50, width: '100%', color: '#11181C' },
+  button: { width: '100%', height: 50, backgroundColor: '#0a7ea4', borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginTop: 30 },
+  buttonText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
+>>>>>>> Stashed changes
 });
