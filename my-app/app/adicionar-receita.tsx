@@ -265,6 +265,7 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     width: '100%',
+    color: '#11181C',
   },
   button: {
     width: '100%',

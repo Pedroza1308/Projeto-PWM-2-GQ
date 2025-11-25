@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import Parse from '@/services/parseConfig'; // Importa a configuração do Back4App
+import { Alert } from 'react-native';
 
 // --- Interfaces de Dados ---
 // Define as interfaces para as Classes do Back4App
@@ -75,6 +76,7 @@ export const useReceitasStore = create<ReceitasState>((set, get) => ({
       set({ tiposCozinha: tipos });
     } catch (e: any) {
       console.error('Erro ao buscar Tipos de Cozinha: ', e);
+      Alert.alert('Erro no Back4App', `Falha ao buscar categorias: ${e.message}`, [{ text: 'OK' }]);
       set({ error: `Falha ao buscar categorias: ${e.message}` });
     } finally {
       set({ isLoading: false });
