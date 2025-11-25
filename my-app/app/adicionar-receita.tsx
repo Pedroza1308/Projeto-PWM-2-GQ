@@ -49,7 +49,7 @@ export default function AdicionarReceitaScreen() {
   }, []);
 
   useEffect(() => {
-    // 2. Preenche o formulário se estiver em modo de edição
+    // 2. Preenche o formulário se estiver em modo de edição OU define o padrão se estiver criando
     if (isEditing && currentReceita) {
       setFormData({
         nome: currentReceita.get('nome') || '',
@@ -60,14 +60,14 @@ export default function AdicionarReceitaScreen() {
         // Pega o ID do Pointer para preencher o Picker
         tipoCozinhaId: currentReceita.get('tipoCozinha')?.id || tiposCozinha[0]?.id || '', 
       });
-    } else if (!isEditing && tiposCozinha.length > 0 && !formData.tipoCozinhaId) {
-      // Define um valor padrão para o Picker no modo de criação
+    } else if (!isEditing && tiposCozinha.length > 0 && formData.tipoCozinhaId === '') {
+      // CORREÇÃO: Define o primeiro item como padrão SE estiver criando E o estado ainda for vazio
       setFormData(prev => ({ 
         ...prev, 
         tipoCozinhaId: tiposCozinha[0]?.id || '' 
       }));
     }
-  }, [isEditing, currentReceita, tiposCozinha]); // Dependências
+  }, [isEditing, currentReceita, tiposCozinha, tiposCozinha.length]); // A dependência tiposCozinha.length é crucial
 
   const handleSave = async () => {
     if (!formData.nome || !formData.tempoPreparo || !formData.ingredientes || !formData.modoPreparo || !formData.tipoCozinhaId) {
@@ -111,6 +111,7 @@ export default function AdicionarReceitaScreen() {
     setIsSaving(false);
   };
 
+  // Se estiver editando E a lista de receitas estiver carregada, mas a receita atual não for encontrada
   const isFormLoading = storeIsLoading || (isEditing && !currentReceita && receitas.length > 0);
 
   return (
@@ -182,16 +183,19 @@ export default function AdicionarReceitaScreen() {
             <ThemedText style={styles.label}>Tipo de Cozinha:</ThemedText>
             <ThemedView style={styles.pickerContainer}>
               <Picker
-                selectedValue={formData.tipoCozinhaId}
+                // CORREÇÃO DE TIPAGEM APLICADA: Usar || '' (string vazia)
+                selectedValue={formData.tipoCozinhaId || ''} 
                 onValueChange={(itemValue) => setFormData(prev => ({ ...prev, tipoCozinhaId: itemValue }))}
                 style={styles.picker}
                 enabled={tiposCozinha.length > 0 && !isSaving}
               >
                 {tiposCozinha.length > 0 ? (
                   tiposCozinha.map(tipo => (
+                    // Aqui usamos o nome e o id, que estão corretos após o ajuste no Store
                     <Picker.Item key={tipo.id} label={tipo.nome} value={tipo.id} />
                   ))
                 ) : (
+                  // Opção de placeholder quando está carregando ou não há dados
                   <Picker.Item label="Carregando Tipos..." value="" />
                 )}
               </Picker>

@@ -31,7 +31,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { 
     receitas, 
-    tiposCozinha, 
+    tiposCozinha, // <--- Estes são objetos JS simples ({ id, nome, cor })
     fetchReceitas, 
     fetchTiposCozinha, 
     isLoading, 
@@ -63,8 +63,7 @@ export default function HomeScreen() {
     { objectId: undefined, nome: 'Todas as Receitas' },
     ...tiposCozinha.map(tipo => ({
       objectId: tipo.id,
-      // Garante que o nome seja uma String pura
-      nome: String(tipo.get('nome')) 
+      nome: tipo.nome
     }))
   ], [tiposCozinha]);
 

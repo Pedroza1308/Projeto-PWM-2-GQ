@@ -33,7 +33,7 @@ export default function DetalhesReceitaScreen() {
     if (!receita && receitas.length === 0 && !isLoading && id) {
         fetchReceitas(); 
     }
-  }, [receita, receitas.length, isLoading, id]); // Adicionado 'receita' e 'id' para dependências
+  }, [receita, receitas.length, isLoading, id]);
 
   // Tratamento de estados de carregamento e não encontrado
   if (isLoading || !id) {
