@@ -19,6 +19,7 @@ const MAPPING = {
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   'plus.circle.fill': 'add-circle', // Adicionado: Mapeamento para o botão de adicionar
+  'info.circle.fill': 'info',
 } as IconMapping;
 
 /**

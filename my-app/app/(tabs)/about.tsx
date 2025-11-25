@@ -1,79 +1,141 @@
-import { StyleSheet, Linking, Platform } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ExternalLink } from '@/components/external-link';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import ParallaxScrollView from '@/components/parallax-scroll-view';
 
 export default function AboutScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>
-        Daily Meals
-      </ThemedText>
-      <ThemedText type="subtitle" style={styles.subtitle}>
-        Seu catálogo de receitas pessoais.
-      </ThemedText>
+    <ParallaxScrollView
+      headerBackgroundColor={{ light: '#FFF8E1', dark: '#1E1E1E' }}
+      headerImage={
+        <IconSymbol
+          size={250}
+          color="#FFA500"
+          name="house.fill"
+          style={styles.headerImage}
+        />
+      }>
       
+      <ThemedView style={styles.titleContainer}>
+        <ThemedText type="title" style={styles.title}>Daily Meals</ThemedText>
+      </ThemedView>
+      
+      <ThemedText style={styles.subtitle}>
+        Seu catálogo de receitas pessoais, prático e organizado.
+      </ThemedText>
+
       <ThemedView style={styles.section}>
-        <ThemedText type="defaultSemiBold">Sobre o Projeto</ThemedText>
-        <ThemedText style={styles.text}>
-          Este aplicativo é focado na catalogação de receitas pessoais, 
-          implementando operações CRUD (Criar, Ler, Atualizar, Deletar) completas para a entidade Receita.
+        <ThemedText type="subtitle" style={styles.sectionTitle}>Funcionalidades</ThemedText>
+        <ThemedText style={styles.introText}>
+          O Daily Meals foi projetado para simplificar o gerenciamento das suas receitas caseiras. Confira o que você pode fazer:
         </ThemedText>
-        <ThemedText style={styles.text}>
-          Utiliza a arquitetura Expo + Expo Router para navegação e o Back4App (Parse) para o backend e armazenamento de dados.
-        </ThemedText>
-        <ThemedText style={styles.text}>
-          O gerenciamento de estado é feito com Zustand, controlando a lista de Receitas e Tipos de Cozinha (relacionamento 1:N).
-        </ThemedText>
+        
+        <FeatureItem 
+          icon="chevron.right" 
+          text="Cadastro Completo: Adicione receitas com nome, ingredientes, modo de preparo, tempo e dificuldade." 
+        />
+        <FeatureItem 
+          icon="chevron.right" 
+          text="Classifique seus pratos por Tipos de Cozinha (ex: Italiana, Brasileira, Japonesa, etc)." 
+        />
+        <FeatureItem 
+          icon="chevron.right" 
+          text="Filtros Rápidos: Encontre exatamente o que procura filtrando sua lista por categorias." 
+        />
+        <FeatureItem 
+          icon="chevron.right" 
+          text="Edite ou remova receitas a qualquer momento." 
+        />
       </ThemedView>
 
       <ThemedView style={styles.section}>
-        <ThemedText type="defaultSemiBold">Recursos Principais</ThemedText>
-        <ThemedText style={styles.text}>• Entidade Principal: Receita (CRUD completo)</ThemedText>
-        <ThemedText style={styles.text}>• Entidade Secundária: Tipo de Cozinha (para exibição e filtro)</ThemedText>
-        <ThemedText style={styles.text}>• Telas: Home (Lista com filtro), Adicionar/Editar, Detalhes, Login/Cadastro, e Sobre.</ThemedText>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>Tecnologias</ThemedText>
+        <ThemedText style={styles.techText}>
+          Este projeto utiliza o <ThemedText type="defaultSemiBold">React Native</ThemedText> com <ThemedText type="defaultSemiBold">Expo</ThemedText>. 
+          O backEnd foi arquitetado usando <ThemedText type="defaultSemiBold">Back4App (Parse)</ThemedText>, 
+          enquanto o <ThemedText type="defaultSemiBold">Zustand</ThemedText> cuida do gerenciamento de estado global da aplicação.
+        </ThemedText>
       </ThemedView>
 
       <ThemedView style={styles.footer}>
         <ExternalLink href="https://github.com/pedroza1308/projeto-pwm-2-gq">
           <ThemedText type="link">
-            <IconSymbol name="paperplane.fill" size={16} color="#0a7ea4" /> Ver no GitHub
+            <IconSymbol name="paperplane.fill" size={18} color="#0a7ea4" /> Ver projeto no GitHub
           </ThemedText>
         </ExternalLink>
       </ThemedView>
+    </ParallaxScrollView>
+  );
+}
+
+function FeatureItem({ icon, text }: { icon: any, text: string }) {
+  return (
+    <ThemedView style={styles.featureItem}>
+      <IconSymbol name={icon} size={20} color="#0a7ea4" style={styles.featureIcon} />
+      <ThemedText style={styles.featureText}>{text}</ThemedText>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
+  headerImage: {
+    bottom: -50,
+    left: -30,
+    position: 'absolute',
+    opacity: 0.8,
+  },
+  titleContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
   },
   title: {
+    color: '#FFA500',
     fontSize: 32,
-    marginBottom: 10,
-    color: '#FFA500', 
+    fontWeight: 'bold',
   },
   subtitle: {
-    marginBottom: 40,
-    opacity: 0.7,
+    fontSize: 18,
+    marginBottom: 24,
+    fontStyle: 'italic',
+    opacity: 0.8,
   },
   section: {
-    width: '100%',
-    marginBottom: 30,
+    marginBottom: 24,
     backgroundColor: 'transparent',
   },
-  text: {
-    fontSize: 16,
+  sectionTitle: {
+    color: '#0a7ea4',
+    marginBottom: 12,
+    fontWeight: '700',
+  },
+  introText: {
+    marginBottom: 12,
+    lineHeight: 22,
+  },
+  techText: {
     lineHeight: 24,
-    marginTop: 5,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 10,
+    alignItems: 'flex-start',
+    backgroundColor: 'transparent',
+  },
+  featureIcon: {
+    marginTop: 2,
+  },
+  featureText: {
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 22,
   },
   footer: {
-    marginTop: 'auto',
+    marginTop: 16,
+    alignItems: 'center',
     marginBottom: 20,
-    backgroundColor: 'transparent',
-  }
+  },
 });
