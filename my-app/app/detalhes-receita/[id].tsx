@@ -3,14 +3,17 @@ import { StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } fr
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useReceitasStore } from '@/store/receitasStore';
+import { useAuthStore } from '@/store/authStore'; // Importa o AuthStore
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function DetalhesReceitaScreen() {
   const router = useRouter();
-  // Obtém o ID da URL, que é o objectId do Parse
   const { id } = useLocalSearchParams<{ id: string }>(); 
   
+  // Pega o usuário logado do store
+  const { user } = useAuthStore();
+
   const { 
     receitas, 
     isLoading, 
@@ -20,22 +23,16 @@ export default function DetalhesReceitaScreen() {
 
   const [isDeleting, setIsDeleting] = useState(false);
   
-  // Encontra a receita nos dados do Zustand (já carregados na Home)
   const receita = useMemo(() => {
-    // Busca a receita pelo ID
     return receitas.find(r => r.id === id);
   }, [id, receitas]);
 
-  // Se o ID for válido, mas a receita não estiver no store (ex: recarregou a tela)
   useEffect(() => {
-    // Se a lista está vazia e não está carregando, tenta buscar todas as receitas.
-    // Isso garante que a tela funciona mesmo se for acessada diretamente (deep link)
     if (!receita && receitas.length === 0 && !isLoading && id) {
         fetchReceitas(); 
     }
   }, [receita, receitas.length, isLoading, id]);
 
-  // Tratamento de estados de carregamento e não encontrado
   if (isLoading || !id) {
     return (
       <ThemedView style={styles.loadingContainer}>
@@ -45,7 +42,6 @@ export default function DetalhesReceitaScreen() {
     );
   }
   
-  // Se não houver receita após o carregamento
   if (!receita) {
     return (
       <ThemedView style={styles.loadingContainer}>
@@ -57,7 +53,12 @@ export default function DetalhesReceitaScreen() {
     );
   }
 
-  // Lógica de Deleção (CRUD - Delete)
+  // --- Lógica de Permissão ---
+  // Verifica se existe um usuário logado e se o ID dele bate com o ID do dono da receita
+  const owner = receita.get('owner');
+  const isOwner = user && owner && user.id === owner.id;
+  // ---------------------------
+
   const handleDelete = () => {
     Alert.alert(
       "Confirmar Exclusão",
@@ -69,9 +70,9 @@ export default function DetalhesReceitaScreen() {
           const success = await deleteReceita(id);
           if (success) {
             Alert.alert('Sucesso', 'Receita excluída.');
-            router.replace('/(tabs)'); // Volta para a lista após a exclusão
+            router.replace('/(tabs)');
           } else {
-            Alert.alert('Erro', 'Falha ao excluir receita.');
+            Alert.alert('Erro', 'Falha ao excluir receita. Verifique suas permissões.');
             setIsDeleting(false);
           }
         }},
@@ -79,36 +80,38 @@ export default function DetalhesReceitaScreen() {
     );
   };
   
-  // Extrai campos
   const nome = receita.get('nome');
   const tempoPreparo = receita.get('tempoPreparo');
   const dificuldade = receita.get('dificuldade');
-  // Formata ingredientes para exibição em lista (bullet points)
   const ingredientes = receita.get('ingredientes')?.split('\n').filter(Boolean).map((item: string, index: number) => 
     <ThemedText key={index} style={styles.listItem}>• {item.trim()}</ThemedText>
   );
   const modoPreparo = receita.get('modoPreparo');
   const tipoCozinhaNome = receita.get('tipoCozinha')?.get('nome') || 'Desconhecido';
-
+  const ownerName = owner?.get('username') || 'Desconhecido';
 
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
-        {/* Título e Botão Editar */}
         <ThemedView style={styles.header}>
           <ThemedText type="title" style={styles.titleText}>{nome}</ThemedText>
-          {/* Navega para a tela de edição usando o ID na query param (CRUD - Update) */}
-          <TouchableOpacity 
-            style={styles.editButton} 
-            onPress={() => router.push(`/adicionar-receita?id=${id}`)}
-          >
-            <IconSymbol name="square.and.pencil" size={24} color="#0a7ea4" />
-          </TouchableOpacity>
+          
+          {/* Só mostra o botão de editar se for o dono */}
+          {isOwner && (
+            <TouchableOpacity 
+              style={styles.editButton} 
+              onPress={() => router.push(`/adicionar-receita?id=${id}`)}
+            >
+              <IconSymbol name="square.and.pencil" size={24} color="#0a7ea4" />
+            </TouchableOpacity>
+          )}
         </ThemedView>
 
-        {/* Detalhes Principais */}
         <ThemedView style={styles.detailsBox}>
+          <ThemedText style={styles.detailItem}>
+            <ThemedText type="defaultSemiBold">Criado por:</ThemedText> {ownerName}
+          </ThemedText>
           <ThemedText style={styles.detailItem}>
             <ThemedText type="defaultSemiBold">Cozinha:</ThemedText> {tipoCozinhaNome}
           </ThemedText>
@@ -120,28 +123,28 @@ export default function DetalhesReceitaScreen() {
           </ThemedText>
         </ThemedView>
 
-        {/* Ingredientes */}
         <ThemedText type="subtitle" style={styles.subtitle}>Ingredientes</ThemedText>
         <ThemedView style={styles.listContainer}>
           {ingredientes && ingredientes.length > 0 ? ingredientes : <ThemedText>Nenhum ingrediente listado.</ThemedText>}
         </ThemedView>
 
-        {/* Modo de Preparo */}
         <ThemedText type="subtitle" style={styles.subtitle}>Modo de Preparo</ThemedText>
         <ThemedText style={styles.bodyText}>{modoPreparo}</ThemedText>
 
-        {/* Botão Deletar (CRUD - Delete) */}
-        <TouchableOpacity 
-          style={[styles.button, styles.deleteButton]} 
-          onPress={handleDelete}
-          disabled={isDeleting}
-        >
-          {isDeleting ? (
-            <ActivityIndicator color="#FFF" />
-          ) : (
-            <ThemedText style={styles.buttonText}>Deletar Receita</ThemedText>
-          )}
-        </TouchableOpacity>
+        {/* Só mostra o botão de deletar se for o dono */}
+        {isOwner && (
+          <TouchableOpacity 
+            style={[styles.button, styles.deleteButton]} 
+            onPress={handleDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <ThemedText style={styles.buttonText}>Deletar Receita</ThemedText>
+            )}
+          </TouchableOpacity>
+        )}
         
       </ScrollView>
     </ThemedView>
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   deleteButton: {
-    backgroundColor: '#D9534F', // Cor vermelha para exclusão
+    backgroundColor: '#D9534F', 
   },
   buttonText: {
     color: '#FFF',

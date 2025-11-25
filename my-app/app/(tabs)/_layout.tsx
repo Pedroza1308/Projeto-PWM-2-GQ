@@ -24,13 +24,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="about" 
-        options={{
-          title: 'Sobre',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="info.circle.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="explore"
         options={{
           title: 'Explore',
@@ -38,9 +31,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="about"
+        options={{
+          title: 'Sobre',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="info.circle.fill" color={color} />,
+        }}
+      />
+      {/* Aba de Perfil */}
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Perfil',
+          // Certifique-se de mapear 'person.fill' em IconSymbol ou usar um ícone existente
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />

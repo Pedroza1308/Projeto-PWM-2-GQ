@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useReceitasStore, Receita } from '@/store/receitasStore';
+import { useReceitasStore } from '@/store/receitasStore';
+import { useAuthStore } from '@/store/authStore'; // Importa auth
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 
-// Define a estrutura de dados inicial para o formulário
 interface ReceitaForm {
   nome: string;
-  tempoPreparo: string; // Manter como string para o TextInput
+  tempoPreparo: string;
   ingredientes: string;
   modoPreparo: string;
   dificuldade: 'Fácil' | 'Médio' | 'Difícil';
@@ -18,8 +18,8 @@ interface ReceitaForm {
 
 export default function AdicionarReceitaScreen() {
   const router = useRouter();
-  // Se houver um ID, significa que estamos editando
   const { id } = useLocalSearchParams<{ id?: string }>(); 
+  const { user } = useAuthStore(); // Usuário atual
   
   const { 
     receitas, 
@@ -36,7 +36,7 @@ export default function AdicionarReceitaScreen() {
     ingredientes: '',
     modoPreparo: '',
     dificuldade: 'Fácil',
-    tipoCozinhaId: '', // Inicialmente vazio
+    tipoCozinhaId: '',
   });
   const [isSaving, setIsSaving] = useState(false);
   
@@ -44,30 +44,36 @@ export default function AdicionarReceitaScreen() {
   const currentReceita = isEditing ? receitas.find(r => r.id === id) : undefined;
 
   useEffect(() => {
-    // 1. Carrega os Tipos de Cozinha (para o Picker)
     fetchTiposCozinha();
   }, []);
 
   useEffect(() => {
-    // 2. Preenche o formulário se estiver em modo de edição OU define o padrão se estiver criando
     if (isEditing && currentReceita) {
+      // --- VERIFICAÇÃO DE SEGURANÇA ---
+      const owner = currentReceita.get('owner');
+      // Se a receita tem dono e o usuário atual não é o dono
+      if (owner && user && owner.id !== user.id) {
+        Alert.alert('Acesso Negado', 'Você só pode editar receitas criadas por você.');
+        router.back();
+        return;
+      }
+      // --------------------------------
+
       setFormData({
         nome: currentReceita.get('nome') || '',
         tempoPreparo: String(currentReceita.get('tempoPreparo') || ''),
         ingredientes: currentReceita.get('ingredientes') || '',
         modoPreparo: currentReceita.get('modoPreparo') || '',
         dificuldade: currentReceita.get('dificuldade') || 'Fácil',
-        // Pega o ID do Pointer para preencher o Picker
         tipoCozinhaId: currentReceita.get('tipoCozinha')?.id || tiposCozinha[0]?.id || '', 
       });
     } else if (!isEditing && tiposCozinha.length > 0 && formData.tipoCozinhaId === '') {
-      // CORREÇÃO: Define o primeiro item como padrão SE estiver criando E o estado ainda for vazio
       setFormData(prev => ({ 
         ...prev, 
         tipoCozinhaId: tiposCozinha[0]?.id || '' 
       }));
     }
-  }, [isEditing, currentReceita, tiposCozinha, tiposCozinha.length]); // A dependência tiposCozinha.length é crucial
+  }, [isEditing, currentReceita, tiposCozinha, tiposCozinha.length, user]);
 
   const handleSave = async () => {
     if (!formData.nome || !formData.tempoPreparo || !formData.ingredientes || !formData.modoPreparo || !formData.tipoCozinhaId) {
@@ -78,7 +84,6 @@ export default function AdicionarReceitaScreen() {
     setIsSaving(true);
     let success = false;
     
-    // Converte tempoPreparo para número
     const tempoPreparoNum = parseInt(formData.tempoPreparo, 10);
     if (isNaN(tempoPreparoNum)) {
       Alert.alert('Erro', 'Tempo de Preparo deve ser um número válido.');
@@ -88,30 +93,27 @@ export default function AdicionarReceitaScreen() {
 
     const dataToSave = {
       ...formData,
-      tempoPreparo: tempoPreparoNum, // Salva como número
+      tempoPreparo: tempoPreparoNum,
     };
     
-    // Chama a função correta do Store
     if (isEditing && id) {
       success = await updateReceita(id, dataToSave);
       if (success) {
         Alert.alert('Sucesso', 'Receita atualizada com sucesso!');
       }
     } else {
-      success = await createReceita(dataToSave as any); // Type assertion para simplificar
+      success = await createReceita(dataToSave as any); 
       if (success) {
         Alert.alert('Sucesso', 'Receita criada com sucesso!');
       }
     }
 
     if (success) {
-      // Volta para a tela de lista de receitas
       router.replace('/(tabs)'); 
     }
     setIsSaving(false);
   };
 
-  // Se estiver editando E a lista de receitas estiver carregada, mas a receita atual não for encontrada
   const isFormLoading = storeIsLoading || (isEditing && !currentReceita && receitas.length > 0);
 
   return (
@@ -126,7 +128,6 @@ export default function AdicionarReceitaScreen() {
             <ActivityIndicator size="large" color="#0a7ea4" style={{ marginTop: 50 }} />
         ) : (
           <>
-            {/* Nome da Receita */}
             <ThemedText style={styles.label}>Nome:</ThemedText>
             <TextInput 
               style={styles.input}
@@ -135,7 +136,6 @@ export default function AdicionarReceitaScreen() {
               onChangeText={(text) => setFormData(prev => ({ ...prev, nome: text }))}
             />
 
-            {/* Tempo de Preparo */}
             <ThemedText style={styles.label}>Tempo de Preparo (minutos):</ThemedText>
             <TextInput 
               style={styles.input}
@@ -145,7 +145,6 @@ export default function AdicionarReceitaScreen() {
               onChangeText={(text) => setFormData(prev => ({ ...prev, tempoPreparo: text }))}
             />
 
-            {/* Ingredientes */}
             <ThemedText style={styles.label}>Ingredientes:</ThemedText>
             <TextInput 
               style={[styles.input, styles.textArea]}
@@ -155,7 +154,6 @@ export default function AdicionarReceitaScreen() {
               onChangeText={(text) => setFormData(prev => ({ ...prev, ingredientes: text }))}
             />
             
-            {/* Modo de Preparo */}
             <ThemedText style={styles.label}>Modo de Preparo:</ThemedText>
             <TextInput 
               style={[styles.input, styles.textArea]}
@@ -165,7 +163,6 @@ export default function AdicionarReceitaScreen() {
               onChangeText={(text) => setFormData(prev => ({ ...prev, modoPreparo: text }))}
             />
 
-            {/* Dificuldade (Picker simples) */}
             <ThemedText style={styles.label}>Dificuldade:</ThemedText>
             <ThemedView style={styles.pickerContainer}>
               <Picker
@@ -179,11 +176,9 @@ export default function AdicionarReceitaScreen() {
               </Picker>
             </ThemedView>
 
-            {/* Tipo de Cozinha (Relacionamento) */}
             <ThemedText style={styles.label}>Tipo de Cozinha:</ThemedText>
             <ThemedView style={styles.pickerContainer}>
               <Picker
-                // CORREÇÃO DE TIPAGEM APLICADA: Usar || '' (string vazia)
                 selectedValue={formData.tipoCozinhaId || ''} 
                 onValueChange={(itemValue) => setFormData(prev => ({ ...prev, tipoCozinhaId: itemValue }))}
                 style={styles.picker}
@@ -191,17 +186,14 @@ export default function AdicionarReceitaScreen() {
               >
                 {tiposCozinha.length > 0 ? (
                   tiposCozinha.map(tipo => (
-                    // Aqui usamos o nome e o id, que estão corretos após o ajuste no Store
                     <Picker.Item key={tipo.id} label={tipo.nome} value={tipo.id} />
                   ))
                 ) : (
-                  // Opção de placeholder quando está carregando ou não há dados
                   <Picker.Item label="Carregando Tipos..." value="" />
                 )}
               </Picker>
             </ThemedView>
 
-            {/* Botão Salvar */}
             <TouchableOpacity 
               style={styles.button} 
               onPress={handleSave}
