@@ -102,44 +102,66 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 24, // Mais espaço nas bordas
+    backgroundColor: '#F8F9FA', // Fundo cinza claro moderno
   },
   title: {
-    fontSize: 32,
-    marginBottom: 10,
-    color: '#FFA500', 
+    fontSize: 34,
+    fontWeight: '800', // Fonte extra bold
+    marginBottom: 8,
+    color: '#FFA500', // Laranja da marca
+    textAlign: 'center',
+    letterSpacing: -1,
   },
   subtitle: {
+    fontSize: 16,
     marginBottom: 40,
-    opacity: 0.7,
+    color: '#6C757D', // Cinza elegante
+    textAlign: 'center',
+    lineHeight: 24,
+    opacity: 1, // Removi a opacidade padrão para usar a cor exata
   },
   inputContainer: {
     width: '100%',
-    marginBottom: 15,
+    marginBottom: 20, // Mais espaço entre os campos
   },
   input: {
     width: '100%',
-    height: 50,
-    borderColor: '#ccc',
+    height: 56, // Altura maior para toque
+    borderColor: '#E9ECEF', // Borda sutil
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginTop: 5,
-    backgroundColor: '#f9f9f9', 
-    color: '#000',
+    borderRadius: 16, // Bordas bem arredondadas
+    paddingHorizontal: 20,
+    marginTop: 8, // Espaço entre o título do campo e o input
+    backgroundColor: '#FFFFFF', // Fundo branco para contraste
+    fontSize: 16,
+    color: '#212529',
+    // Sombra suave
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   button: {
     width: '100%',
-    height: 50,
+    height: 56,
     backgroundColor: '#FFA500',
-    borderRadius: 8,
+    borderRadius: 50, // Botão estilo pílula
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 30,
+    // Sombra colorida brilhante
+    shadowColor: '#FFA500',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
   },
   buttonText: {
-    color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 18,
+    letterSpacing: 0.5,
   },
 });
