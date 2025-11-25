@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, FlatList, TouchableOpacity, Image, Alert } from 'react-native';
+import { StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useAuthStore } from '@/store/authStore';
@@ -12,31 +12,49 @@ export default function ProfileScreen() {
   const { myReceitas, fetchMyReceitas, isLoading } = useReceitasStore();
   const router = useRouter();
 
-  // Carrega as receitas do usuário ao montar a tela
   useEffect(() => {
     fetchMyReceitas();
   }, []);
 
   const handleLogout = () => {
-    logout();
-    router.replace('/');
+    Alert.alert(
+      'Sair da Conta',
+      'Tem certeza que deseja sair?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Sair', 
+          style: 'destructive',
+          onPress: () => {
+            logout();
+            router.replace('/');
+          }
+        }
+      ]
+    );
   };
 
-  // Componente para renderizar cada item da lista
   const renderReceitaItem = ({ item }: { item: any }) => (
     <TouchableOpacity 
-      style={styles.card}
+      style={styles.receitaCard}
       onPress={() => router.push(`/detalhes-receita/${item.id}`)}
     >
-      <ThemedView style={styles.cardContent}>
-        <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+      <ThemedView style={styles.receitaContent}>
+        <ThemedText type="defaultSemiBold" style={styles.receitaTitle}>
           {item.get('nome')}
         </ThemedText>
-        <ThemedText style={styles.cardSubtitle}>
-          {item.get('tipoCozinha')?.get('nome') || 'Geral'} • {item.get('tempoPreparo')} min
-        </ThemedText>
+        <ThemedView style={styles.receitaDetails}>
+          <ThemedView style={styles.cuisineBadge}>
+            <ThemedText style={styles.cuisineText}>
+              {item.get('tipoCozinha')?.get('nome') || 'Geral'}
+            </ThemedText>
+          </ThemedView>
+          <ThemedText style={styles.timeText}>
+            {item.get('tempoPreparo')} min
+          </ThemedText>
+        </ThemedView>
       </ThemedView>
-      <IconSymbol name="chevron.right" size={20} color="#0a7ea4" />
+      <IconSymbol name="chevron.right" size={20} color="#0a7ea4" style={styles.chevron} />
     </TouchableOpacity>
   );
 
@@ -45,50 +63,81 @@ export default function ProfileScreen() {
       
       {/* Cabeçalho do Perfil */}
       <ThemedView style={styles.header}>
+        <IconSymbol name="person.fill" size={60} color="#FFA500" style={styles.avatarIcon} />
         <ThemedText type="title" style={styles.title}>Meu Perfil</ThemedText>
-        <ThemedText style={styles.subtitle}>{user?.get('username')}</ThemedText>
+        <ThemedText style={styles.username}>@{user?.get('username')}</ThemedText>
       </ThemedView>
 
       {/* Seção de Informações Básicas */}
       <ThemedView style={styles.infoSection}>
-        <ThemedText type="defaultSemiBold" style={styles.sectionHeader}>Informações Básicas</ThemedText>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>Informações</ThemedText>
         
-        <ThemedView style={styles.infoItem}>
-          <ThemedText style={styles.label}>Usuário</ThemedText>
-          <ThemedView style={styles.inputLike}>
-            <ThemedText style={{ color: '#000' }}>{user?.get('username')}</ThemedText>
+        <ThemedView style={styles.infoCard}>
+          <ThemedView style={styles.infoRow}>
+            <IconSymbol name="person.circle" size={20} color="#0a7ea4" />
+            <ThemedView style={styles.infoTextContainer}>
+              <ThemedText style={styles.infoLabel}>Usuário</ThemedText>
+              <ThemedText style={styles.infoValue}>{user?.get('username')}</ThemedText>
+            </ThemedView>
           </ThemedView>
-        </ThemedView>
 
-        <ThemedView style={styles.infoItem}>
-          <ThemedText style={styles.label}>E-mail</ThemedText>
-          <ThemedView style={styles.inputLike}>
-            <ThemedText style={{ color: '#000' }}>{user?.get('email')}</ThemedText>
+          <ThemedView style={styles.divider} />
+
+          <ThemedView style={styles.infoRow}>
+            <IconSymbol name="envelope.fill" size={20} color="#0a7ea4" />
+            <ThemedView style={styles.infoTextContainer}>
+              <ThemedText style={styles.infoLabel}>E-mail</ThemedText>
+              <ThemedText style={styles.infoValue}>{user?.get('email')}</ThemedText>
+            </ThemedView>
           </ThemedView>
         </ThemedView>
       </ThemedView>
 
       {/* Seção Minhas Receitas */}
       <ThemedView style={styles.recipesSection}>
-        <ThemedText type="subtitle" style={styles.sectionHeader}>Minhas Receitas</ThemedText>
+        <ThemedView style={styles.recipesSectionHeader}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>Minhas Receitas</ThemedText>
+          <ThemedView style={styles.receitasCountBadge}>
+            <ThemedText style={styles.receitasCountText}>{myReceitas.length}</ThemedText>
+          </ThemedView>
+        </ThemedView>
         
-        <FlatList
-          data={myReceitas}
-          keyExtractor={(item) => item.id}
-          renderItem={renderReceitaItem}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={
-            <ThemedText style={styles.emptyText}>
-              {isLoading ? 'Carregando...' : 'Você ainda não criou nenhuma receita.'}
-            </ThemedText>
-          }
-          refreshing={isLoading}
-          onRefresh={fetchMyReceitas}
-        />
+        {isLoading && myReceitas.length === 0 ? (
+          <ThemedView style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0a7ea4" />
+            <ThemedText style={styles.loadingText}>Carregando suas receitas...</ThemedText>
+          </ThemedView>
+        ) : (
+          <FlatList
+            data={myReceitas}
+            keyExtractor={(item) => item.id}
+            renderItem={renderReceitaItem}
+            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={
+              <ThemedView style={styles.emptyContainer}>
+                <IconSymbol name="book" size={60} color="#CCC" style={styles.emptyIcon} />
+                <ThemedText style={styles.emptyText}>
+                  Você ainda não criou nenhuma receita
+                </ThemedText>
+                <TouchableOpacity 
+                  style={styles.addRecipeButton}
+                  onPress={() => router.push('/adicionar-receita')}
+                >
+                  <ThemedText style={styles.addRecipeButtonText}>
+                    Criar minha primeira receita
+                  </ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+            }
+            refreshing={isLoading && myReceitas.length > 0}
+            onRefresh={fetchMyReceitas}
+          />
+        )}
       </ThemedView>
 
       {/* Botão de Logout */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <IconSymbol name="arrow.right.square.fill" size={20} color="#FFF" />
         <ThemedText style={styles.logoutText}>Sair da Conta</ThemedText>
       </TouchableOpacity>
 
@@ -97,98 +146,227 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Container Principal
   container: {
     flex: 1,
     padding: 20,
     paddingTop: 60,
+    backgroundColor: '#F8F9FA',
   },
+
+  // === CABEÇALHO ===
   header: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 32,
+    paddingVertical: 20,
+  },
+  avatarIcon: {
+    marginBottom: 12,
   },
   title: {
-    color: '#FFA500',
+    color: '#212529',
     fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 4,
+    letterSpacing: -0.5,
   },
-  subtitle: {
-    color: '#888',
+  username: {
+    color: '#6C757D',
     fontSize: 16,
+    fontWeight: '500',
   },
+
+  // === SEÇÃO DE INFORMAÇÕES ===
   infoSection: {
-    backgroundColor: '#f9f9f9', // Fundo claro
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
+    marginBottom: 32,
   },
-  sectionHeader: {
-    marginBottom: 15,
-    fontSize: 18,
-    color: '#333', // Ajuste para garantir contraste
+  sectionTitle: {
+    color: '#2E86AB',
+    marginBottom: 16,
+    fontWeight: '600',
+    fontSize: 20,
   },
-  infoItem: {
-    marginBottom: 15,
-    backgroundColor: 'transparent'
+  infoCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#F1F3F4',
   },
-  label: {
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#fff', 
-    backgroundColor: '#151718', 
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    alignSelf: 'flex-start',
-    borderRadius: 4,
-    overflow: 'hidden',
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
   },
-  inputLike: {
-    backgroundColor: '#e0e0e0',
-    padding: 12,
-    borderRadius: 5,
+  infoTextContainer: {
+    flex: 1,
+    marginLeft: 16,
   },
+  infoLabel: {
+    fontSize: 12,
+    color: '#6C757D',
+    fontWeight: '600',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  infoValue: {
+    fontSize: 16,
+    color: '#212529',
+    fontWeight: '500',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E9ECEF',
+    marginVertical: 12,
+  },
+
+  // === SEÇÃO DE RECEITAS ===
   recipesSection: {
     flex: 1,
-    marginTop: 10,
+    marginBottom: 16,
   },
+  recipesSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  receitasCountBadge: {
+    backgroundColor: '#FFA500',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  receitasCountText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+
+  // === CARDS DE RECEITA ===
   listContent: {
     paddingBottom: 20,
   },
-  card: {
+  receitaCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#1E1E1E', 
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
-    borderLeftWidth: 4,
-    borderLeftColor: '#FFA500',
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 20,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#F1F3F4',
+    minHeight: 80,
   },
-  cardContent: {
-    backgroundColor: 'transparent',
+  receitaContent: {
+    flex: 1,
+    marginRight: 16,
   },
-  cardTitle: {
-    color: '#FFF',
-    fontSize: 16,
+  receitaTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#212529',
+    marginBottom: 8,
+    letterSpacing: -0.3,
   },
-  cardSubtitle: {
-    color: '#CCC',
+  receitaDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  cuisineBadge: {
+    backgroundColor: '#E7F5FF',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  cuisineText: {
     fontSize: 12,
-    marginTop: 2,
+    color: '#0A7EA4',
+    fontWeight: '600',
+  },
+  timeText: {
+    fontSize: 14,
+    color: '#6C757D',
+    fontWeight: '500',
+  },
+  chevron: {
+    opacity: 0.7,
+  },
+
+  // === ESTADOS (LOADING E EMPTY) ===
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6C757D',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyIcon: {
+    marginBottom: 16,
+    opacity: 0.5,
   },
   emptyText: {
     textAlign: 'center',
-    color: '#888',
-    marginTop: 20,
+    fontSize: 16,
+    color: '#6C757D',
+    lineHeight: 24,
+    marginBottom: 24,
   },
+  addRecipeButton: {
+    backgroundColor: '#FFA500',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  addRecipeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // === BOTÃO DE LOGOUT ===
   logoutButton: {
-    marginTop: 10,
-    padding: 15,
-    backgroundColor: '#D9534F',
-    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
+    gap: 8,
+    padding: 16,
+    backgroundColor: '#DC3545',
+    borderRadius: 16,
+    shadowColor: '#DC3545',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   logoutText: {
-    color: '#FFF',
-    fontWeight: 'bold',
-  }
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 16,
+    letterSpacing: 0.3,
+  },
 });
