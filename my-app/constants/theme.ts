@@ -5,13 +5,13 @@
 
 import { Platform } from 'react-native';
 
-
-const tintColorLight = '#FF6B35'; 
-const tintColorDark = '#4DABF7';  
+// Modern color palette with better contrast and accessibility
+const tintColorLight = '#FF6B35'; // Updated to vibrant orange
+const tintColorDark = '#4DABF7';  // Softer blue for dark mode
 
 export const Colors = {
   light: {
-    
+    // Core colors
     text: {
       primary: '#1A1A1A',
       secondary: '#495057',
@@ -26,7 +26,7 @@ export const Colors = {
     },
     tint: tintColorLight,
     
-   
+    // UI elements
     icon: {
       primary: '#495057',
       secondary: '#6C757D',
@@ -35,24 +35,24 @@ export const Colors = {
     tabIconDefault: '#ADB5BD',
     tabIconSelected: tintColorLight,
     
-    
+    // Borders and separators
     border: {
       primary: '#E9ECEF',
       secondary: '#F1F3F5',
       accent: tintColorLight,
     },
     
-    
+    // Semantic colors
     success: '#37B24D',
     warning: '#F59F00',
     error: '#FA5252',
     info: '#339AF0',
     
-    
+    // States
     pressed: '#F8F9FA',
     disabled: '#CED4DA',
     
-  
+    // Modern accents
     accent: {
       primary: '#FF6B35',
       secondary: '#339AF0',

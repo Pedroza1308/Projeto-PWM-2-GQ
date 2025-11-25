@@ -15,10 +15,7 @@ export function ThemedText({
   type = 'default',
   ...rest
 }: ThemedTextProps) {
-  const textColor = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
-  
-  // Mesma correção: extrai 'primary' se o retorno for um objeto
-  const color = typeof textColor === 'object' ? textColor.primary : textColor;
+  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
 
   return (
     <Text
