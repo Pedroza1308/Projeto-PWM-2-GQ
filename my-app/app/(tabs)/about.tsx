@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ExternalLink } from '@/components/external-link';
@@ -11,150 +11,247 @@ export default function AboutScreen() {
       headerBackgroundColor={{ light: '#FFF8E1', dark: '#1E1E1E' }}
       headerImage={
         <IconSymbol
-          size={250}
+          size={260}
           color="#FFA500"
-          name="house.fill"
+          name="info.circle.fill"
           style={styles.headerImage}
         />
       }>
       
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title" style={styles.title}>Daily Meals</ThemedText>
-      </ThemedView>
-      
-      <ThemedText style={styles.subtitle}>
-        Seu catálogo de receitas pessoais, prático e organizado.
-      </ThemedText>
-
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle" style={styles.sectionTitle}>Funcionalidades</ThemedText>
-        <ThemedText style={styles.introText}>
-          O Daily Meals foi projetado para simplificar o gerenciamento das suas receitas caseiras. Confira o que você pode fazer:
-        </ThemedText>
+      <View style={styles.contentContainer}>
         
-        <FeatureItem 
-          icon="chevron.right" 
-          text="Cadastro Completo: Adicione receitas com nome, ingredientes, modo de preparo, tempo e dificuldade." 
-        />
-        <FeatureItem 
-          icon="chevron.right" 
-          text="Classifique seus pratos por Tipos de Cozinha (ex: Italiana, Brasileira, Japonesa, etc)." 
-        />
-        <FeatureItem 
-          icon="chevron.right" 
-          text="Filtros Rápidos: Encontre exatamente o que procura filtrando sua lista por categorias." 
-        />
-        <FeatureItem 
-          icon="chevron.right" 
-          text="Edite ou remova receitas a qualquer momento." 
-        />
-      </ThemedView>
+        
+        <View style={styles.mainHeader}>
+          <ThemedText style={styles.appTitle}>Daily Meals</ThemedText>
+          <ThemedText style={styles.appSubtitle}>Versão 1.0.0</ThemedText>
+        </View>
 
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle" style={styles.sectionTitle}>Tecnologias</ThemedText>
-        <ThemedText style={styles.techText}>
-          Este projeto utiliza o <ThemedText type="defaultSemiBold">React Native</ThemedText> com <ThemedText type="defaultSemiBold">Expo</ThemedText>. 
-          O backEnd foi arquitetado usando <ThemedText type="defaultSemiBold">Back4App (Parse)</ThemedText>, 
-          enquanto o <ThemedText type="defaultSemiBold">Zustand</ThemedText> cuida do gerenciamento de estado global da aplicação.
-        </ThemedText>
-      </ThemedView>
-
-      <ThemedView style={styles.footer}>
-        <ExternalLink href="https://github.com/pedroza1308/projeto-pwm-2-gq">
-          <ThemedText type="link">
-            <IconSymbol name="paperplane.fill" size={18} color="#0a7ea4" /> Ver projeto no GitHub
+        
+        <View style={styles.card}>
+          <View style={styles.cardHeaderRow}>
+            <IconSymbol name="house.fill" size={22} color="#FFA500" />
+            <ThemedText style={styles.cardTitle}>Sobre o Projeto</ThemedText>
+          </View>
+          <ThemedText style={styles.cardBody}>
+            O Daily Meals é o seu assistente pessoal de cozinha. Organize suas receitas favoritas, filtre por categorias e nunca mais esqueça aquele ingrediente especial.
           </ThemedText>
-        </ExternalLink>
-      </ThemedView>
+        </View>
+
+        
+        <View style={styles.card}>
+          <View style={styles.cardHeaderRow}>
+            <IconSymbol name="star.fill" size={22} color="#FFA500" />
+            <ThemedText style={styles.cardTitle}>O que você pode fazer</ThemedText>
+          </View>
+          
+          <View style={styles.featureList}>
+            <FeatureRow text="Cadastrar novas receitas completas" />
+            <FeatureRow text="Filtrar por tipo de cozinha" />
+            <FeatureRow text="Gerenciar tempo e dificuldade" />
+            <FeatureRow text="Excluir ou editar registros" />
+          </View>
+        </View>
+
+        
+        <View style={styles.card}>
+          <View style={styles.cardHeaderRow}>
+            <IconSymbol name="chevron.left.forwardslash.chevron.right" size={22} color="#FFA500" />
+            <ThemedText style={styles.cardTitle}>Tech Stack</ThemedText>
+          </View>
+          <ThemedText style={styles.cardBody}>
+            Desenvolvido com tecnologias modernas para garantir performance e escalabilidade.
+          </ThemedText>
+          
+          <View style={styles.techRow}>
+            <TechBadge text="React Native" />
+            <TechBadge text="Expo" />
+            <TechBadge text="TypeScript" />
+            <TechBadge text="Zustand" />
+            <TechBadge text="Parse / Back4App" />
+          </View>
+        </View>
+
+        
+        <View style={styles.footerContainer}>
+          <ExternalLink href="https://github.com/pedroza1308/projeto-pwm-2-gq" style={styles.githubButton}>
+            <IconSymbol name="paperplane.fill" size={20} color="#FFF" style={{marginRight: 10}} />
+            <ThemedText style={styles.githubButtonText}>Acessar Repositório</ThemedText>
+          </ExternalLink>
+          
+          <ThemedText style={styles.copyright}>
+            © 2025 Daily Meals Team
+          </ThemedText>
+        </View>
+
+      </View>
     </ParallaxScrollView>
   );
 }
 
-function FeatureItem({ icon, text }: { icon: any, text: string }) {
+
+function FeatureRow({ text }: { text: string }) {
   return (
-    <ThemedView style={styles.featureItem}>
-      <IconSymbol name={icon} size={20} color="#0a7ea4" style={styles.featureIcon} />
+    <View style={styles.featureRow}>
+      <View style={styles.bullet} />
       <ThemedText style={styles.featureText}>{text}</ThemedText>
-    </ThemedView>
+    </View>
   );
 }
+
+// Componente auxiliar para Badge de tecnologia
+function TechBadge({ text }: { text: string }) {
+  return (
+    <View style={styles.techBadge}>
+      <ThemedText style={styles.techBadgeText}>{text}</ThemedText>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+ 
   headerImage: {
-    bottom: -40,
-    left: -20,
+    bottom: -50,
+    left: -30,
     position: 'absolute',
-    opacity: 0.7,
+    opacity: 0.2, // Marca d'água suave
+    transform: [{ rotate: '-15deg' }]
   },
-  titleContainer: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    color: '#FF6B35',
-    fontSize: 36,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 18,
-    marginBottom: 32,
-    textAlign: 'center',
-    lineHeight: 24,
-    color: '#666',
-    paddingHorizontal: 20,
-  },
-  section: {
-    marginBottom: 32,
+  
+  
+  contentContainer: {
     paddingHorizontal: 16,
+    paddingBottom: 40,
+    backgroundColor: 'transparent', 
   },
-  sectionTitle: {
-    color: '#2E86AB',
+
+  
+  mainHeader: {
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 24,
+  },
+  appTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#FFA500', 
+    letterSpacing: -0.5,
+  },
+  appSubtitle: {
+    fontSize: 14,
+    color: '#888',
+    fontWeight: '500',
+    marginTop: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+
+  
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16, 
+    padding: 20,
     marginBottom: 16,
-    fontWeight: '600',
-    fontSize: 20,
+    
+
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4, 
+    borderWidth: 1,
+    borderColor: '#F1F3F4',
   },
-  introText: {
-    marginBottom: 20,
-    lineHeight: 22,
-    fontSize: 15,
-    color: '#444',
-  },
-  techText: {
-    lineHeight: 22,
-    fontSize: 15,
-    color: '#444',
-  },
-  featureItem: {
+  cardHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 12,
-    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    paddingBottom: 8,
   },
-  featureIcon: {
-    marginTop: 2,
-    marginRight: 12,
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#212529', 
+    marginLeft: 10,
+  },
+  cardBody: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#6C757D', 
+  },
+
+ 
+  featureList: {
+    marginTop: 4,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  bullet: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFA500', 
+    marginRight: 10,
   },
   featureText: {
-    flex: 1,
     fontSize: 15,
-    lineHeight: 20,
-    color: '#444',
+    color: '#495057',
+    fontWeight: '500',
   },
-  footer: {
-    marginTop: 24,
+
+ 
+  techRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 16,
+  },
+  techBadge: {
+    backgroundColor: '#FFF8E1', 
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#FFE0B2',
+  },
+  techBadgeText: {
+    color: '#E65100', 
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+
+  footerContainer: {
+    marginTop: 20,
     alignItems: 'center',
-    marginBottom: 32,
   },
-  githubLink: {
+  githubButton: {
+    backgroundColor: '#212529', 
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 50, 
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
+    width: '100%',
   },
-  githubText: {
+  githubButtonText: {
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '500',
-    color: '#2E86AB',
+    fontWeight: 'bold',
   },
+  copyright: {
+    marginTop: 16,
+    fontSize: 12,
+    color: '#ADB5BD',
+  }
 });
